@@ -1,13 +1,18 @@
 package com.ruixin.esaddress.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.ruixin.esaddress.dao.EsAddressDao;
 import com.ruixin.esaddress.mapper.AddressMapper;
 import com.ruixin.esaddress.service.EsAddressService;
 import com.ruixin.esaddress.vo.Address;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequest;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.common.unit.DistanceUnit;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.*;
 import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
@@ -76,7 +81,14 @@ public class EsAddressServiceImpl implements EsAddressService {
 
     @Override
     public void saveAddress(List<Address> addresses) {
-        esAddressDao.saveAll(addresses);
+        Client client = elasticsearchTemplate.getClient();
+        BulkRequestBuilder bulkRequest = client.prepareBulk();
+        for(Address address:addresses){
+            String json= JSONObject.toJSONString(address);
+            bulkRequest.add(client.prepareIndex("address-index","address",address.getId().toString()).setSource(json, XContentType.JSON));
+        }
+        bulkRequest.get();
+        //esAddressDao.saveAll(addresses);
     }
 
 
@@ -90,6 +102,8 @@ public class EsAddressServiceImpl implements EsAddressService {
         esAddressDao.deleteAll();
         List<Address> list = addressMapper.selectList();
         if(list!=null && list.size()>0){
+            for(Address item:list)
+                item.initGeoShape();
             saveAddress(list);
         }
     }
@@ -142,11 +156,11 @@ public class EsAddressServiceImpl implements EsAddressService {
     public List<Address> circleQuery(double[] center,double radius,int limit){
         if(limit==0)
             limit=maxReturnCount;
-        GeoDistanceQueryBuilder builder = QueryBuilders.geoDistanceQuery("geoPoint").point(center[0], center[1]).distance(radius, DistanceUnit.METERS);
-        GeoDistanceSortBuilder sortBuilder = SortBuilders.geoDistanceSort("geoPoint",new GeoPoint(center[0], center[1])).unit(DistanceUnit.METERS).order(SortOrder.ASC);
+        GeoDistanceQueryBuilder builder = QueryBuilders.geoDistanceQuery("geoShape").point(center[0], center[1]).distance(radius, DistanceUnit.METERS).geoDistance(GeoDistance.ARC);
+        //GeoDistanceSortBuilder sortBuilder = SortBuilders.geoDistanceSort("geoShape",new GeoPoint(center[0], center[1])).unit(DistanceUnit.METERS).order(SortOrder.ASC);
 
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
-                .withQuery(builder).withSort(sortBuilder).withPageable(new PageRequest(0, limit))
+                .withQuery(builder).withPageable(new PageRequest(0, limit))
                 .build();
         List<Address> list = esAddressDao.search(searchQuery).getContent();
         return list;
@@ -163,7 +177,7 @@ public class EsAddressServiceImpl implements EsAddressService {
     public List<Address> rectQuery(double[] topLeft, double[] bottomRight, int limit) {
         if(limit==0)
             limit=maxReturnCount;
-        GeoBoundingBoxQueryBuilder builder = QueryBuilders.geoBoundingBoxQuery("geoPoint").setCorners(new GeoPoint(topLeft[0], topLeft[1]),new GeoPoint(bottomRight[0], bottomRight[1]));
+        GeoBoundingBoxQueryBuilder builder = QueryBuilders.geoBoundingBoxQuery("geoShape").setCorners(new GeoPoint(topLeft[0], topLeft[1]),new GeoPoint(bottomRight[0], bottomRight[1]));
 
         SearchQuery searchQuery = new NativeSearchQueryBuilder()
                 .withQuery(builder).withPageable(new PageRequest(0, limit))

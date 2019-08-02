@@ -13,7 +13,7 @@
         </foreach>
     </insert>
     <select id="selectList" resultMap="addressMap">
-        SELECT A.*,concat(concat(A.SMY,','),A.SMX) AS geopoint FROM T_ADDRESS A <!--WHERE A.STATUS=0-->
+        SELECT A.* FROM T_ADDRESS A WHERE ROWNUM &lt;=100 <!--WHERE A.STATUS=0-->
     </select>
     <resultMap id="addressMap" type="com.ruixin.esaddress.vo.Address">
         <result column="ID" property="id"/>
@@ -21,6 +21,5 @@
         <result column="SMY" property="lat"/>
         <result column="MC" property="name"/>
         <result column="LX" property="type"/>
-        <result column="GEOPOINT" property="geoPoint"/>
     </resultMap>
 </mapper>

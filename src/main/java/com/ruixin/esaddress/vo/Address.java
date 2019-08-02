@@ -1,10 +1,8 @@
 package com.ruixin.esaddress.vo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
-import org.springframework.data.elasticsearch.annotations.GeoPointField;
-import org.springframework.data.elasticsearch.annotations.Mapping;
-import org.springframework.data.elasticsearch.annotations.Setting;
+import org.springframework.data.elasticsearch.annotations.*;
 
 import java.io.Serializable;
 
@@ -31,8 +29,7 @@ public class Address implements Serializable {
 
     private double lat;
 
-    @GeoPointField
-    private String geoPoint;
+    private Geo geoShape = new Geo();
 
     public Long getId() {
         return id;
@@ -74,23 +71,16 @@ public class Address implements Serializable {
         this.lat = lat;
     }
 
-    public String getGeoPoint() {
-        return geoPoint;
+    public void initGeoShape(){
+        this.geoShape.setType("POINT");
+        this.geoShape.setCoordinates(new double[]{this.lon,this.lat});
     }
 
-    public void setGeoPoint(String geoPoint) {
-        this.geoPoint = geoPoint;
+    public Geo getGeoShape() {
+        return geoShape;
     }
 
-    @Override
-    public String toString() {
-        return "Address{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", type='" + type + '\'' +
-                ", lon=" + lon +
-                ", lat=" + lat +
-                ", geoPoint='" + geoPoint + '\'' +
-                '}';
+    public void setGeoShape(Geo geoShape) {
+        this.geoShape = geoShape;
     }
 }

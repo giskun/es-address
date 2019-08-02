@@ -28,8 +28,8 @@
       "lat": {
         "type": "double"
       },
-      "geoPoint": {
-        "type": "geo_point"
+      "geoShape": {
+        "type": "geo_shape"
       }
     }
   }
