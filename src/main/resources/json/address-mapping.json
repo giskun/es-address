@@ -1,0 +1,36 @@
+{
+  "address": {
+    "_all": {
+      "enabled": false
+    },
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "name": {
+        "type": "text",
+        "analyzer": "ikSearchAnalyzer",
+        "search_analyzer": "ikSearchAnalyzer",
+        "fields": {
+          "pinyin": {
+            "type": "text",
+            "analyzer": "pinyinSimpleIndexAnalyzer",
+            "search_analyzer": "pinyinSimpleIndexAnalyzer"
+          }
+        }
+      },
+      "type": {
+        "type": "text"
+      },
+      "lon": {
+        "type": "double"
+      },
+      "lat": {
+        "type": "double"
+      },
+      "geoPoint": {
+        "type": "geo_point"
+      }
+    }
+  }
+}

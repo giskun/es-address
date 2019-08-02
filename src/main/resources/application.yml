@@ -1,0 +1,39 @@
+spring:
+  data:
+    elasticsearch:
+      cluster-name: elasticsearch
+      cluster-nodes: 127.0.0.1:9300 #配置es节点信息，逗号分隔，如果没有指定，则启动ClientNode（9200端口是http查询使用的。9300集群使用。.）
+      max_result_window: 10000 #配置小于es返回的最大条数
+  datasource:
+    url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
+    username: ADDRESS
+    password: ADDRESS
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      filters: stat,logging
+      initial-size: 8
+      min-idle: 3
+      max-active: 10
+      query-timeout: 6000
+      transaction-query-timeout: 6000
+      remove-abandoned-timeout: 1800
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      test-while-idle:  true
+      test-on-borrow: false
+      test-on-return: false
+server:
+  port: 8082
+
+es:
+  initdata: false #默认初始化数据源至es中,为true将清除历史数据，然后从数据库中读取所有数据重新压入
+  pinyin: false #是否支持拼音搜索
+
+mybatis:
+  mapperLocations: classpath:/xml/*.xml
+  typeAliasesPackage: com.ruixin.esaddress.vo
+  config-location: classpath:mybatis-config.xml
+debug: true
+
