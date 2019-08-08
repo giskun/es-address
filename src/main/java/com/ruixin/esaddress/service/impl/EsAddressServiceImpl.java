@@ -4,13 +4,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.ruixin.esaddress.dao.EsAddressDao;
 import com.ruixin.esaddress.mapper.AddressMapper;
 import com.ruixin.esaddress.service.EsAddressService;
+import com.ruixin.esaddress.util.GeometryCreator;
 import com.ruixin.esaddress.vo.Address;
+import com.vividsolutions.jts.geom.Geometry;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequest;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.geo.builders.ShapeBuilder;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.*;
@@ -31,6 +34,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Optional;
+
+import static org.elasticsearch.index.query.QueryBuilders.geoShapeQuery;
 
 /**
  * @author zfk
@@ -156,6 +161,7 @@ public class EsAddressServiceImpl implements EsAddressService {
     public List<Address> circleQuery(double[] center,double radius,int limit){
         if(limit==0)
             limit=maxReturnCount;
+        Geometry geo = GeometryCreator.getInstance().createCircle(center[1],center [0],radius);
         GeoDistanceQueryBuilder builder = QueryBuilders.geoDistanceQuery("geoShape").point(center[0], center[1]).distance(radius, DistanceUnit.METERS).geoDistance(GeoDistance.ARC);
         //GeoDistanceSortBuilder sortBuilder = SortBuilders.geoDistanceSort("geoShape",new GeoPoint(center[0], center[1])).unit(DistanceUnit.METERS).order(SortOrder.ASC);
 
