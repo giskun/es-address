@@ -1,4 +1,5 @@
 package com.ruixin.esaddress.service.impl;
+import	java.util.HashMap;
 
 import com.ruixin.esaddress.mapper.AddressMapper;
 import com.ruixin.esaddress.service.AddressService;
@@ -15,6 +16,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import java.util.List;
+import java.util.Map;
 
 
 @Service
@@ -25,7 +27,10 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<Address> getAll() {
-        return addressMapper.selectList();
+        Map<String,Object> params = new HashMap<String, Object> ();
+        params.put("page",1);
+        params.put("limit",Integer.MAX_VALUE);
+        return addressMapper.selectList(params);
     }
 
 

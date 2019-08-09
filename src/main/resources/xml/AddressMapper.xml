@@ -12,10 +12,19 @@
             #{item.type,jdbcType=VARCHAR})
         </foreach>
     </insert>
-    <select id="selectList" resultMap="addressMap">
-        SELECT A.*,concat(concat(A.SMY,','),A.SMX) AS geopoint FROM T_ADDRESS A <!--WHERE A.STATUS=0-->
+
+    <select id="selectTotolCount" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM T_ADDRESS <!--BZDZK_PT-->
+    </select>
+    <select id="selectList" parameterType="java.util.Map" resultMap="addressMap">
+        SELECT A.*,concat(concat(A.SMY,','),A.SMX) AS geopoint FROM (
+        SELECT * FROM (
+        SELECT A.*,ROWNUM AS RN FROM T_ADDRESS A <!--BZDZK_PT-->
+        ) WHERE RN &gt;(${page}-1)*${limit} and RN &lt;=${page}*${limit}
+        ) A <!--WHERE A.STATUS=0-->
     </select>
     <resultMap id="addressMap" type="com.ruixin.esaddress.vo.Address">
+		<!--<result column="SMID" property="id"/>-->
         <result column="ID" property="id"/>
         <result column="SMX" property="lon"/>
         <result column="SMY" property="lat"/>

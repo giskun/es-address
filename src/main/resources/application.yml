@@ -5,9 +5,14 @@ spring:
       cluster-nodes: 127.0.0.1:9300 #配置es节点信息，逗号分隔，如果没有指定，则启动ClientNode（9200端口是http查询使用的。9300集群使用。.）
       max_result_window: 10000 #配置小于es返回的最大条数
   datasource:
+    #公司配置
     url: jdbc:oracle:thin:@127.0.0.1:1521:orcl
     username: ADDRESS
     password: ADDRESS
+    #现场配置
+#    url: jdbc:oracle:thin:@10.125.129.12:1521:orcl
+#    username: gis340200000000
+#    password: gis340200000000
     driver-class-name: oracle.jdbc.driver.OracleDriver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
@@ -28,7 +33,10 @@ server:
   port: 8082
 
 es:
-  initdata: false #默认初始化数据源至es中,为true将清除历史数据，然后从数据库中读取所有数据重新压入
+  initdata:
+    init: false #默认初始化数据源至es中,init为false后下面datadelete、datapagelimit参数无效
+    datadelete: false #是否清除历史数据
+    datapagelimit: 100000 #在init为true情况下起作用，当为0时，则一次性加载,根据jvm的内存设定每次需要加载的数据量
   pinyin: false #是否支持拼音搜索
 
 mybatis:

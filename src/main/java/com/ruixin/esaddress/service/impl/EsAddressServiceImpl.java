@@ -24,7 +24,9 @@ import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -41,8 +43,14 @@ public class EsAddressServiceImpl implements EsAddressService {
     @Autowired
     ElasticsearchTemplate elasticsearchTemplate;
 
-    @Value("${es.initdata}")
-    private boolean data_init;//默认是否从数据库读取数据压入es中
+    @Value("${es.initdata.init}")
+    private boolean data_init;//默认是否初始化数据源
+
+    @Value("${es.initdata.datadelete}")
+    private boolean data_delete;//初始化时是否清除历史数据
+
+    @Value("${es.initdata.datapagelimit}")
+    private int pageLimit;
 
     @Value("${es.pinyin}")
     private boolean query_pinyin;//查询是否支持拼音
@@ -85,13 +93,27 @@ public class EsAddressServiceImpl implements EsAddressService {
      */
     @PostConstruct
     public void initData(){
-        if(!data_init)
+        if(!data_init){
             return;
-        esAddressDao.deleteAll();
-        List<Address> list = addressMapper.selectList();
-        if(list!=null && list.size()>0){
-            saveAddress(list);
         }
+        if(data_delete){
+            esAddressDao.deleteAll();
+        }
+        int totalCount = addressMapper.selectTotolCount();
+        if(pageLimit==0) {
+            pageLimit = Integer.MAX_VALUE;
+        }
+        int pageCount = totalCount/pageLimit + 1;
+        Map<String,Object> params = new HashMap<>();
+        params.put("limit",pageLimit);
+        for(int i=1;i<=pageCount;i++){
+            params.put("page",i);
+            List<Address> list = addressMapper.selectList(params);
+            if(list!=null && list.size()>0){
+                saveAddress(list);
+            }
+        }
+
     }
 
     /**
