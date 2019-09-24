@@ -111,6 +111,7 @@ public class EsAddressServiceImpl implements EsAddressService {
             List<Address> list = addressMapper.selectList(params);
             if(list!=null && list.size()>0){
                 saveAddress(list);
+                list = null;
             }
         }
 
